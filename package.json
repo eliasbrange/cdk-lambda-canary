@@ -1,0 +1,29 @@
+{
+  "name": "cdk-lambda-canary",
+  "version": "0.1.0",
+  "bin": {
+    "cdk-lambda-canary": "bin/cdk-lambda-canary.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "cdk": "cdk",
+    "biome": "biome check .",
+    "biome:fix": "biome check --write .",
+    "debug": "node debug.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "20.12.7",
+    "aws-cdk": "2.144.0",
+    "ts-node": "^10.9.2",
+    "typescript": "~5.4.5"
+  },
+  "dependencies": {
+    "@biomejs/biome": "^1.8.0",
+    "@types/aws-lambda": "^8.10.138",
+    "aws-cdk-lib": "2.144.0",
+    "constructs": "^10.0.0",
+    "esbuild": "^0.21.4",
+    "source-map-support": "^0.5.21"
+  }
+}
