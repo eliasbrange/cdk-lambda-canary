@@ -1,6 +1,11 @@
 import * as cdk from "aws-cdk-lib";
 import { HttpApi, HttpMethod } from "aws-cdk-lib/aws-apigatewayv2";
 import { HttpLambdaIntegration } from "aws-cdk-lib/aws-apigatewayv2-integrations";
+import {
+  LambdaApplication,
+  LambdaDeploymentConfig,
+  LambdaDeploymentGroup,
+} from "aws-cdk-lib/aws-codedeploy";
 import { Runtime } from "aws-cdk-lib/aws-lambda";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import type { Construct } from "constructs";
@@ -15,11 +20,21 @@ export class CdkLambdaCanaryStack extends cdk.Stack {
       runtime: Runtime.NODEJS_20_X,
     });
 
+    const alias = apiFn.addAlias("live");
+
+    const application = new LambdaApplication(this, "application");
+    const deploymentGroup = new LambdaDeploymentGroup(this, "deploymentGroup", {
+      application,
+      alias,
+      deploymentConfig: LambdaDeploymentConfig.CANARY_10PERCENT_5MINUTES,
+      alarms: [],
+    });
+
     const api = new HttpApi(this, "Api");
     api.addRoutes({
       path: "/hello",
       methods: [HttpMethod.GET],
-      integration: new HttpLambdaIntegration("ApiIntegration", apiFn),
+      integration: new HttpLambdaIntegration("ApiIntegration", alias),
     });
 
     new cdk.CfnOutput(this, "ApiUrl", {
