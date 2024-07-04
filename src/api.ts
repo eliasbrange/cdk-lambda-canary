@@ -8,8 +8,12 @@ export const handler = async (
 ): Promise<APIGatewayProxyResultV2> => {
   console.log(event);
 
+  if (Math.random() < 0.8) {
+    throw new Error("error");
+  }
+
   return {
     statusCode: 200,
-    body: JSON.stringify({ message: "Hello summer!" }),
+    body: JSON.stringify({ message: "Hello winter!" }),
   };
 };

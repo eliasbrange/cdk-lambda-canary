@@ -1,6 +1,7 @@
 import * as cdk from "aws-cdk-lib";
 import { HttpApi, HttpMethod } from "aws-cdk-lib/aws-apigatewayv2";
 import { HttpLambdaIntegration } from "aws-cdk-lib/aws-apigatewayv2-integrations";
+import { Alarm } from "aws-cdk-lib/aws-cloudwatch";
 import {
   LambdaApplication,
   LambdaDeploymentConfig,
@@ -22,12 +23,26 @@ export class CdkLambdaCanaryStack extends cdk.Stack {
 
     const alias = apiFn.addAlias("live");
 
+    const alarm = new Alarm(this, "MyAlarm", {
+      alarmName: `${apiFn.functionName}-${apiFn.currentVersion.version}-errors`,
+      metric: apiFn.metricErrors({
+        period: cdk.Duration.minutes(1),
+        dimensionsMap: {
+          FunctionName: apiFn.functionName,
+          Resource: `${apiFn.functionName}:${alias.aliasName}`,
+          ExecutedVersion: apiFn.currentVersion.version,
+        },
+      }),
+      threshold: 1,
+      evaluationPeriods: 1,
+    });
+
     const application = new LambdaApplication(this, "application");
     const deploymentGroup = new LambdaDeploymentGroup(this, "deploymentGroup", {
       application,
       alias,
       deploymentConfig: LambdaDeploymentConfig.CANARY_10PERCENT_5MINUTES,
-      alarms: [],
+      alarms: [alarm],
     });
 
     const api = new HttpApi(this, "Api");
